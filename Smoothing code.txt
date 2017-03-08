@@ -38,3 +38,6 @@ void loop() {
   Serial.println(average);
   delay(1);        // delay in between reads for stability
 }
+
+////I'm assuming down here would begin the code instructing the board to compare the current value against the calculated average?
+////Or would those lines go above current line 39?
