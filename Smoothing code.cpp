@@ -31,6 +31,31 @@ struct MovingAverage {
 std::uint16_t get_reading() {
     // this always returns 7 just because.... put your "read the pin" code here
     return 7;
+  int sensorPin = A0;
+int ledPin = LED_BUILTIN;
+int sensorValue = 0;
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode (sensorPin, INPUT);
+  pinMode(ledPin,OUTPUT);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  sensorValue = analogRead(sensorPin);
+  Serial.println(sensorValue);
+  if (sensorValue>864)
+  {
+    digitalWrite(ledPin,HIGH);
+  }
+  else
+  {
+    digitalWrite(ledPin,LOW);
+  }
+  delay(1);
+
+}  
 }
 
 void do_lights() {
