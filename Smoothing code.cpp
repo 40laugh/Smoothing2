@@ -1,40 +1,63 @@
-const int numReadings = 100;
+// this lets you use std::uint8_t, std::uint16_t, etc
+// below I use std::uint16_t because 0-1024 is too big for 8bits (0-255) and we don't want
+// to handle negative numbers. The "u" before int means unsigned (only positive).
+#include <cstdint>
 
-int readings[numReadings];      // the readings from the analog input
-int readIndex = 0;              // the index of the current reading
-int total = 0;                  // the running total
-int average = 0;                // the average
+#define MOV_AVG_SIZE  20                    // keep this many readings
+#define THRESHOLD     1.5                   // reading must be 1.5x higher than avg
 
-int inputPin = A0;
+struct MovingAverage {
+    std::uint16_t data[MOV_AVG_SIZE] = {0}; // hold the values here, all values default to 0
+    std::uint8_t  cursor{0};                // {0} just means defaults to 0
+    std::uint8_t  valid_num{0};             // number of entries we have filled
+    std::uint16_t sum{0};                   // start with a sum of 0
 
-void setup() {
-  // initialize serial communication with computer:
-  Serial.begin(9600);
-  // initialize all the readings to 0:
-  for (int thisReading = 0; thisReading < numReadings; thisReading++) {
-    readings[thisReading] = 0;
-  }
+    std::uint16_t get() {
+        if (valid_num == 0) { return 0; }   // dopn't divide by 0
+        return sum / valid_num;
+    }
+    
+    void insert(std::uint16_t val) {
+        sum -= data[cursor];                // remove this reading from the sum
+        data[cursor] = val;                 // replace old value with new
+        sum += val;                         // adjust the new sum
+        cursor = (cursor+1) % MOV_AVG_SIZE; // % is the "remainder" so this "wraps" the list for us
+        if (valid_num < MOV_AVG_SIZE) {
+            ++valid_num;                    // short hand for "add 1" but doesn't faster for reasons you shouldn't care about
+        }
+    }
+};
+
+std::uint16_t get_reading() {
+    // this always returns 7 just because.... put your "read the pin" code here
+    return 7;
 }
 
-void loop() {
-  // subtract the last reading:
-  total = total - readings[readIndex];
-  // read from the sensor:
-  readings[readIndex] = analogRead(inputPin);
-  // add the reading to the total:
-  total = total + readings[readIndex];
-  // advance to the next position in the array:
-  readIndex = readIndex + 1;
+void do_lights() {
+    // turn on your lights, play music, etc
+}
 
-  // if we're at the end of the array...
-  if (readIndex >= numReadings) {
-    // ...wrap around to the beginning:
-    readIndex = 0;
-  }
+int main() {
+    MovingAverage avg;
 
-  // calculate the average:
-  average = total / numReadings;
-  // send it to the computer as ASCII digits
-  Serial.println(average);
-  delay(1);        // delay in between reads for stability
+    // "prime" the avg
+    for (int i = 0; i < 100; ++i) {         // do 100 readings to get a "reliable" starting avg
+        std::uint16_t r = get_reading();    // read the pin value
+        avg.insert(r);                      // insert reading
+    }
+
+    // off to the races
+    for (;;) {                              // infinite loop
+        std::uint16_t r = get_reading();    // read the pin value
+
+        // check if we are over the threshold
+        // only add to the average if _not_ over the threshold otherwise the
+        // average will potentially get skewed... probably not that big of a deal
+        // but what I would suggest
+        if (r > avg.get()*THRESHOLD) {
+            do_lights();                    // we crossed the threshold, do stuff
+        } else {
+            avg.insert(r);                  // only insert reading if not across the threshold
+        }
+    }
 }
