@@ -5,7 +5,8 @@
 
 #define MOV_AVG_SIZE  20                    // keep this many readings
 #define THRESHOLD     1.5                   // reading must be 1.5x higher than avg
-
+int sensorPin = A0;
+int ledPin = LED_BUILTIN;
 struct MovingAverage {
     std::uint16_t data[MOV_AVG_SIZE] = {0}; // hold the values here, all values default to 0
     std::uint8_t  cursor{0};                // {0} just means defaults to 0
@@ -27,14 +28,33 @@ struct MovingAverage {
         }
     }
 };
-
+void setup()
+void loop()    
 std::uint16_t get_reading() {
     // this always returns 7 just because.... put your "read the pin" code here
     return 7;
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode (sensorPin, INPUT);
+  pinMode(ledPin,OUTPUT);
+}
+
+  // put your main code here, to run repeatedly:
+
+}  
 }
 
 void do_lights() {
     // turn on your lights, play music, etc
+ Serial.println(sensorValue);
+  if (sensorValue>864)
+  {
+    digitalWrite(ledPin,HIGH);
+  }
+  else
+  {
+    digitalWrite(ledPin,LOW);
+  }
 }
 
 int main() {
