@@ -15,7 +15,7 @@ struct MovingAverage {
     std::uint16_t get() {
         if (valid_num == 0) { return 0; }   // dopn't divide by 0
         return sum / valid_num;
-    }
+    }                                       
     
     void insert(std::uint16_t val) {
         sum -= data[cursor];                // remove this reading from the sum
@@ -26,7 +26,7 @@ struct MovingAverage {
             ++valid_num;                    // short hand for "add 1" but doesn't faster for reasons you shouldn't care about
         }
     }
-};
+};                                          //End of running average
 
 std::uint16_t get_reading() {
     // this always returns 7 just because.... put your "read the pin" code here
